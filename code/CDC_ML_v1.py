@@ -160,7 +160,6 @@ def univariate_numerical_statistic(dataframe, num_features):
     Args:
         dataframe (dataframe): cdc dataset
     """
-    # call encode_age_category function to encode the values
     cat_col = list(num_features)
     # creat a list of univariate numreical feature as num_col
     print(dataframe.describe()[1:][cat_col])
@@ -172,7 +171,6 @@ def bivariate_categorical_graph(dataframe, cat_features):
         dataframe (dataframe): cdc dataset
         cat_features (list): list of all categorical features
     """
-    # encode_age_category(dataframe)
     i = 1
     # creat an empty canvas size of 25*15
     plt.figure(figsize = (25,15))
@@ -422,20 +420,20 @@ def main():
     """
     df_cdc = load_dataset('G:\\My Drive\\CDC_ML\\2-Working\\dataset\\heart_2020_cleaned.csv')
     # unique_values(df_cdc)
-    # print(numerical_features(df_cdc))
-    # print(categorical_features(df_cdc)) 
-    # univariate_categorical_graph(df_cdc, categorical_features(df_cdc))
-    # univariate_numerical_graph(df_cdc, numerical_features(df_cdc))
-    # univariate_numerical_statistic(df_cdc, numerical_features(df_cdc))
-    # bivariate_categorical_graph(df_cdc, categorical_features(df_cdc))
-    # bivariate_numerical_graph(df_cdc, numerical_features(df_cdc), 'DiffWalking')
+
+    # print(numerical_features        (df_cdc))
+    # print(categorical_features      (df_cdc)) 
+    # univariate_categorical_graph    (df_cdc, categorical_features(df_cdc))
+    # univariate_numerical_graph      (df_cdc, numerical_features(df_cdc))
+    # univariate_numerical_statistic  (df_cdc, numerical_features(df_cdc))
+    # bivariate_categorical_graph     (df_cdc, categorical_features(df_cdc))
+    # bivariate_numerical_graph       (df_cdc, numerical_features(df_cdc), 'DiffWalking')
     
-    df_cdc_encode = preprocessing_encode_columns(df_cdc)
-    X_train, y_train, X_test, y_test = preprocessing_splitting(df_cdc_encode, 'HeartDisease')
-    X_train_scale, X_test_scale = preprocessing_scaling(X_train, X_test)    
-    
-    X_train_blnc, y_train_blnc = balance_data('smote', X_train_scale, y_train)
-    cv = k_fold_cross_validation(10)
+    df_cdc_encode                       = preprocessing_encode_columns  (df_cdc)
+    X_train, y_train, X_test, y_test    = preprocessing_splitting       (df_cdc_encode, 'HeartDisease')
+    X_train_scale, X_test_scale         = preprocessing_scaling         (X_train, X_test)    
+    X_train_blnc, y_train_blnc          = balance_data                  ('smote', X_train_scale, y_train)
+    cv                                  = k_fold_cross_validation       (10)
 
     params= {
         "criterion"     :   ["gini", "entropy", "log_loss"], 
