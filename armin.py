@@ -28,12 +28,12 @@ from sklearn.ensemble import AdaBoostClassifier
 from sklearn.model_selection import RandomizedSearchCV
 from xgboost import XGBClassifier
 from sklearn.svm import SVC
-import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import Sequential
-from tensorflow.keras.layers import Dense 
-from tensorflow.keras.layers import Dropout
-from tensorflow.keras.losses import BinaryCrossentropy
+# import tensorflow as tf
+# from tensorflow import keras
+# from tensorflow.keras import Sequential
+# from tensorflow.keras.layers import Dense 
+# from tensorflow.keras.layers import Dropout
+# from tensorflow.keras.losses import BinaryCrossentropy
 from sklearn.metrics import accuracy_score,confusion_matrix,classification_report
 
 
@@ -56,9 +56,7 @@ def unique_values(dataframe):
         dataframe (dataframe): cdc dataset
     """
     # creat a list of features as columns_df
-    columns_df = ['HeartDisease', 'BMI', 'Smoking', 'AlcoholDrinking', 'Stroke', 'PhysicalHealth',
-        'MentalHealth', 'DiffWalking', 'Sex', 'AgeCategory', 'Race', 'Diabetic',
-        'PhysicalActivity', 'GenHealth', 'SleepTime', 'Asthma', 'KidneyDisease', 'SkinCancer']
+    columns_df = list(dataframe.columns.values)
     # loop over dataset to print all unique values
     for column in columns_df:
         print(column, ':', str(dataframe[column].unique()))
@@ -113,7 +111,7 @@ def univariate_categorical_graph(dataframe, cat_features):
         cat_features (list): list of all categorical features
     """
     # call encode_age_category function to encode the values
-    encode_age_category(dataframe)
+    # encode_age_category(dataframe)
     i = 1
     # create an empty canvas of size 25x15
     plt.figure(figsize = (25,15))
@@ -156,18 +154,16 @@ def univariate_numerical_graph(dataframe, num_features):
         i+=1
     plt.show()
 
-# need modification
-def univariate_numerical_statistic(dataframe):
+def univariate_numerical_statistic(dataframe, num_features):
     """print numerical feature's statistic
 
     Args:
         dataframe (dataframe): cdc dataset
     """
     # call encode_age_category function to encode the values
-    encode_age_category(dataframe)
+    cat_col = list(num_features)
     # creat a list of univariate numreical feature as num_col
-    num_col = ['BMI','PhysicalHealth','MentalHealth', 'AgeCategory', 'SleepTime']
-    print(dataframe.describe()[1:][num_col])
+    print(dataframe.describe()[1:][cat_col])
 
 def bivariate_categorical_graph(dataframe, cat_features):
     """plot all categorical features, related to target feature
@@ -193,7 +189,7 @@ def bivariate_categorical_graph(dataframe, cat_features):
         i +=1
     plt.show()
 
-def bivariate_numerical_graph(dataframe, num_features, col_name):
+def bivariate_numerical_graph(dataframe, num_features, target):
     """plot numerical features, related to col_name
 
     Args:
@@ -210,7 +206,7 @@ def bivariate_numerical_graph(dataframe, num_features, col_name):
         # plot each column in the canvas
         plt.subplot(1,5,i)
         # plot numerical features using boxplot
-        sns.boxplot(y=dataframe[feature], x = dataframe[col_name])
+        sns.boxplot(y=dataframe[feature], x = dataframe[target])
         i+=1
     plt.show()
 
@@ -233,7 +229,7 @@ def preprocessing_encode_columns(dataframe):
     dataframe = pd.get_dummies(dataframe, columns=['Race', 'Diabetic', 'GenHealth'], prefix = ['Race', 'Diabetic', 'GenHealth'])
     return dataframe
 
-def preprocessing_splitting(dataframe):
+def preprocessing_splitting(dataframe, target):
     """Preprocessing; splitting dataset: 20/100 and 80/100
 
     Args:
@@ -245,10 +241,10 @@ def preprocessing_splitting(dataframe):
     # split the data into train and test
     train_data, test_data = train_test_split(dataframe, train_size=0.80)
     # split the train data into train and validation
-    X_train = train_data.drop('HeartDisease', axis=1)
-    y_train = train_data['HeartDisease']
-    X_test = test_data.drop('HeartDisease', axis=1)
-    y_test = test_data['HeartDisease']
+    X_train = train_data.drop(target, axis=1)
+    y_train = train_data[target]
+    X_test = test_data.drop(target, axis=1)
+    y_test = test_data[target]
     # return the splitted data
     return X_train, y_train, X_test, y_test
 
@@ -306,7 +302,7 @@ def k_fold_cross_validation(number_of_split):
     # creat a list of k
     return KFold(n_splits=number_of_split, random_state=None,shuffle=False)
 
-def fit_model(model, X_train, y_train, cv, pkl_file):
+def fit_model(model, X_train, y_train, cv, params, v, pkl_file):
     """fit model
     Args:
         model (string): model's name
@@ -317,38 +313,38 @@ def fit_model(model, X_train, y_train, cv, pkl_file):
     """
     if(model == 'dt'):
         tree=DecisionTreeClassifier(random_state=1024)
-        #range of hyparameters of model
-        #weights=[{0,1},{1,10.68}]  # two dictionary in a list. Each disctionary is showing a class and it's weigtht
-        params = {"criterion":['entropy'], "max_depth": [100]} #best values
-        #hyparameters Tuning
-        model_cv=GridSearchCV(tree, param_grid=params, cv=cv,n_jobs=-1, verbose = 3)  # for tuning the model
-        #fit the model on the train data set
+        model_cv=GridSearchCV(tree, param_grid=params, cv=cv,n_jobs=-1, verbose=v)
         model_cv.fit(X_train , y_train)
+        best_params = model_cv.best_params_
+        print("Best Parameters: ", best_params)
         pickle.dump(model_cv, open(pkl_file, 'wb'))
     elif(model == 'perceptron'):
-        # creat a perceptron model
-        params = {'tol':[0.0001],'random_state': [2]}
-        model_cv = GridSearchCV(Perceptron(), params, refit = True, cv=cv, verbose = 3)
-        # fitting the model for grid search
+        model = Perceptron()
+        model_cv = GridSearchCV(model , params, refit = True, cv=cv, verbose=v)
         model_cv.fit(X_train, y_train)
+        best_params = model_cv.best_params_
+        print("Best Parameters: ", best_params)
         pickle.dump(model_cv, open(pkl_file, 'wb'))
     elif (model == 'nb'):
         model = GaussianNB()
-        params = {'var_smoothing': np.logspace(1,10, num=100)}
-        model_cv = GridSearchCV(model, param_grid=params ,cv=cv) 
+        model_cv = GridSearchCV(model, param_grid=params ,cv=cv, verbose=v) 
         model_cv.fit(X_train, y_train)
+        best_params = model_cv.best_params_
+        print("Best Parameters: ", best_params)
         pickle.dump(model_cv, open(pkl_file, 'wb')) 
     elif (model == 'knn'):
         model = KNeighborsClassifier()
-        params = {'algorithm':['auto']}
-        model_cv = GridSearchCV(model, param_grid=params, cv=cv)
+        model_cv = GridSearchCV(model, param_grid=params, cv=cv, verbose=v)
         model_cv.fit(X_train, y_train)
+        best_params = model_cv.best_params_
+        print("Best Parameters: ", best_params)
         pickle.dump(model_cv, open(pkl_file, 'wb'))  
     elif(model == 'lr'):
         model = LogisticRegression()
-        params = {"penalty":["l1","l2"],"C":np.logspace(-3,3,7)}
-        model_cv=GridSearchCV(model,params,cv=10)
+        model_cv=GridSearchCV(model,params,cv=cv, verbose=v)
         model.fit(X_train,y_train)
+        best_params = model_cv.best_params_
+        print("Best Parameters: ", best_params)
         pickle.dump(model_cv, open(pkl_file, 'wb')) 
     elif(model == 'nn'):
         model=Sequential([
@@ -368,31 +364,37 @@ def fit_model(model, X_train, y_train, cv, pkl_file):
         model.fit(X_train, y_train, epochs=30)
         pickle.dump(model, open(pkl_file, 'wb'))
     elif(model == 'rf'):
-        params = {'criterion':['entropy']}
         model = RandomForestClassifier()
-        model_cv = GridSearchCV(model, param_grid=params, cv=cv)
+        model_cv = GridSearchCV(model, param_grid=params, cv=cv, verbose=v)
         model_cv.fit(X_train, y_train)
+        best_params = model_cv.best_params_
+        print("Best Parameters: ", best_params)
         pickle.dump(model_cv, open(pkl_file, 'wb'))
     elif(model == 'svm'):
         model = SVC()
-        params = {'kernel':['rbf']}
-        model_cv = GridSearchCV(model, param_grid=params, cv=cv)
+        model_cv = GridSearchCV(model, param_grid=params, cv=cv, verbose=v)
         model_cv.fit(X_train, y_train)
+        best_params = model_cv.best_params_
+        print("Best Parameters: ", best_params)
         pickle.dump(model_cv, open(pkl_file, 'wb'))
     elif(model == 'xgb'):
         model = XGBClassifier()
-        params = {'gamma':[0.12]}
-        model_cv = GridSearchCV(model, param_grid=params, cv=cv)
+        model_cv = GridSearchCV(model, param_grid=params, cv=cv, verbose=v)
         model_cv.fit(X_train, y_train)
+        best_params = model_cv.best_params_
+        print("Best Parameters: ", best_params)
         pickle.dump(model_cv, open(pkl_file, 'wb'))
     elif(model == 'ada'):
         model = AdaBoostClassifier()
-        params = {'n_estimators':[50], 'learning_rate':[1]}
-        model_cv = GridSearchCV(model, param_grid=params, cv=cv)
+        model_cv = GridSearchCV(model, param_grid=params, cv=cv, verbose=v)
         model_cv.fit(X_train, y_train)
+        best_params = model_cv.best_params_
+        print("Best Parameters: ", best_params)
         pickle.dump(model_cv, open(pkl_file, 'wb'))
     else:
-        print('1-dt\n2-perc\n3-nb\n4-knn\n5-lr\n6-nn\n7-rf\n8-svm\n9-xgb\n10-ada')
+        print('''model's name is not correct
+        please choose one of the following model:
+        dt, perceptron, nb, knn, lr, nn, rf, svm, xgb, ada''')
 
 def load_model(pkl_file):
     loaded_model = pickle.load(open(pkl_file, 'rb'))
@@ -407,21 +409,25 @@ def main():
     """
     df_cdc = load_dataset('G:\\My Drive\\CDC_ML\\2-Working\\dataset\\heart_2020_cleaned.csv')
     # unique_values(df_cdc)
+    # print(numerical_features(df_cdc))
+    # print(categorical_features(df_cdc)) 
     # univariate_categorical_graph(df_cdc, categorical_features(df_cdc))
     # univariate_numerical_graph(df_cdc, numerical_features(df_cdc))
-    # univariate_numerical_statistic(df_cdc)
+    # univariate_numerical_statistic(df_cdc, numerical_features(df_cdc))
     # bivariate_categorical_graph(df_cdc, categorical_features(df_cdc))
     # bivariate_numerical_graph(df_cdc, numerical_features(df_cdc), 'DiffWalking')
     
     df_cdc_encode = preprocessing_encode_columns(df_cdc)
-    X_train, y_train, X_test, y_test = preprocessing_splitting(df_cdc_encode)
+    X_train, y_train, X_test, y_test = preprocessing_splitting(df_cdc_encode, 'HeartDisease')
     X_train_scale, X_test_scale = preprocessing_scaling(X_train, X_test)    
     
     X_train_blnc, y_train_blnc = balance_data('smote', X_train_scale, y_train)
     cv = k_fold_cross_validation(10)
 
-    fit_model('xgb', X_train_blnc, y_train_blnc, cv, 'G:\\My Drive\\xgb.pkl')
-    load_model_perc = load_model('G:\\My Drive\\xgb.pkl')
+    params = {"criterion" : ["gini", "entropy", "log_loss"], "max_depth": [100]}
+
+    fit_model('dt', X_train_blnc, y_train_blnc, cv, params, 3, 'D:\\CDC_ML_pkl\\dt.pkl')
+    load_model_perc = load_model('D:\\CDC_ML_pkl\\dt.pkl')
     score_model(X_test_scale, y_test, load_model_perc)
 
 
