@@ -1,11 +1,9 @@
 ![banner](https://cdn-134.anonfiles.com/bcedj9Ffya/41dc3b47-1667146266/pocket-watch-g336da50e1_1920.jpg)
 
-</br></br>
 
 # <b>About the dataset</b> 
 - Factors assessed by the BRFSS in 2020 included health status and healthy days, exercise, inadequate sleep, chronic health conditions, oral health, tobacco use, cancer screenings, and health-care access (core section). Optional Module topics for 2020 included prediabetes and diabetes, cognitive decline, electronic cigarettes, cancer survivorship (type, treatment, pain management) and sexual orientation/gender identity (SOGI).
 
-</br>
 </br>
 
 ## Dataset Description [Source](https://www.cdc.gov/brfss/annual_data/2020/pdf/codebook20_llcp-v2-508.pdf)
