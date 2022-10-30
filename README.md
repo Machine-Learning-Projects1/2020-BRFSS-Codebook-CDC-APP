@@ -17,7 +17,7 @@
 |<b>PhysicalHealth</b>|Number of Days Physical Health Not Good|<i>Now thinking about your physical health, which includes physical illness and injury, for how many days during the past 30 days was your physical health not good?</i>|Number of days [1-30]|
 |<b>MentalHealth</b>|Number of Days Mental Health Not Good|<i>Now thinking about your mental health, which includes stress, depression, and problems with emotions, for how many days during the past 30 days was your mental health not good?</i>|Number of days [1-30]|
 |<b>DiffWalking</b>|Difficulty Walking or Climbing Stairs|<i>Do you have serious difficulty walking or climbing stairs?</i>|-Yes<br>-No|
-|Sex|Are you male or female?|Are you male or female?|-Male<br>-Female|
+|<b>Sex</b>|Are you male or female?|<i>Are you male or female?</i>|-Male<br>-Female|
 |<b>AgeCategory</b>|Reported age in five-year age categories calculated variable|<i>Fourteen-level age category</i>|-Age [18-79]<br>-Age [80 or older]|
 |<b>Race</b>|Imputed race/ethnicity value|<i>Imputed race/ethnicity value (This value is the reported race/ethnicity or an imputed race/ethnicity, if the respondent refused to give a race/ethnicity. The value of the imputed race/ethnicity will be the most common race/ethnicity response for that region of the state)</i>|-White<br>-Black<br>-Asian<br>-American Indian/Alaskan Native<br>-Hispanic<br>-Other|
 |<b>Diabetic</b>|(Ever told) you had diabetes|<i>(Ever told) (you had) diabetes? (If ´Yes´ and respondent is female, ask ´Was this only when you were pregnant?´. If Respondent says pre-diabetes or borderline diabetes, use response code 4.)</i>|-Yes<br>-No<br>-No, borderline diabetes<br>-Yes (during pregnancy)|
