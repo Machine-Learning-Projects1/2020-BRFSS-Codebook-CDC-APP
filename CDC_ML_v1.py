@@ -309,88 +309,101 @@ def fit_model(model, X_train, y_train, cv, params, v, pkl_file):
         X_train (dataframe): dataframe
         y_train (dataframe): dataframe
         cv (list/datframe): list of n dataframe
+        params (dictionary): dictionary of parameters
+        v (int): verbose: the higher, the more messages
         pkl_file (pkl): pickle file for save the model
     """
     if(model == 'dt'):
-        tree=DecisionTreeClassifier(random_state=1024)
-        model_cv=GridSearchCV(tree, param_grid=params, cv=cv,n_jobs=-1, verbose=v)
+        model = DecisionTreeClassifier()
+        model_cv = GridSearchCV(model, param_grid=params, cv=cv, verbose=v)
         model_cv.fit(X_train , y_train)
         best_params = model_cv.best_params_
-        print("Best Parameters: ", best_params)
         pickle.dump(model_cv, open(pkl_file, 'wb'))
+        return best_params
+
     elif(model == 'perceptron'):
         model = Perceptron()
-        model_cv = GridSearchCV(model , params, refit = True, cv=cv, verbose=v)
+        model_cv = GridSearchCV(model , param_grid=params, cv=cv, verbose=v)
         model_cv.fit(X_train, y_train)
         best_params = model_cv.best_params_
-        print("Best Parameters: ", best_params)
         pickle.dump(model_cv, open(pkl_file, 'wb'))
+        return best_params
+
     elif (model == 'nb'):
         model = GaussianNB()
         model_cv = GridSearchCV(model, param_grid=params ,cv=cv, verbose=v) 
         model_cv.fit(X_train, y_train)
         best_params = model_cv.best_params_
-        print("Best Parameters: ", best_params)
-        pickle.dump(model_cv, open(pkl_file, 'wb')) 
+        pickle.dump(model_cv, open(pkl_file, 'wb'))
+        return best_params
+
     elif (model == 'knn'):
         model = KNeighborsClassifier()
         model_cv = GridSearchCV(model, param_grid=params, cv=cv, verbose=v)
         model_cv.fit(X_train, y_train)
         best_params = model_cv.best_params_
-        print("Best Parameters: ", best_params)
-        pickle.dump(model_cv, open(pkl_file, 'wb'))  
+        pickle.dump(model_cv, open(pkl_file, 'wb'))
+        return best_params
+
     elif(model == 'lr'):
         model = LogisticRegression()
-        model_cv=GridSearchCV(model,params,cv=cv, verbose=v)
+        model_cv = GridSearchCV(model, param_grid=params, cv=cv, verbose=v)
         model.fit(X_train,y_train)
         best_params = model_cv.best_params_
-        print("Best Parameters: ", best_params)
-        pickle.dump(model_cv, open(pkl_file, 'wb')) 
-    elif(model == 'nn'):
-        model=Sequential([
-            Dense(units=512, activation='relu'),
-            Dropout(0.2),
-            Dense(units=512, activation='relu'),
-            Dropout(0.2),
-            Dense(units=512, activation='relu'),
-            Dropout(0.2),
-            Dense(units=256, activation='relu'),
-            Dropout(0.2),
-            Dense(units=128, activation='relu'),
-            Dropout(0.2),
-            Dense(units=1 , activation='sigmoid')
-        ])
-        model.compile(optimizer='adam', loss='binary_crossentropy',metrics=['accuracy'])
-        model.fit(X_train, y_train, epochs=30)
-        pickle.dump(model, open(pkl_file, 'wb'))
+        pickle.dump(model_cv, open(pkl_file, 'wb'))
+        return best_params
+
+    # elif(model == 'nn'):
+    #     model=Sequential([
+    #         Dense(units=512, activation='relu'),
+    #         Dropout(0.2),
+    #         Dense(units=512, activation='relu'),
+    #         Dropout(0.2),
+    #         Dense(units=512, activation='relu'),
+    #         Dropout(0.2),
+    #         Dense(units=256, activation='relu'),
+    #         Dropout(0.2),
+    #         Dense(units=128, activation='relu'),
+    #         Dropout(0.2),
+    #         Dense(units=1 , activation='sigmoid')
+    #     ])
+    #     model.compile(optimizer='adam', loss='binary_crossentropy',metrics=['accuracy'])
+    #     model.fit(X_train, y_train, epochs=30)
+    #     pickle.dump(model, open(pkl_file, 'wb'))
+    #     return best_params
+
     elif(model == 'rf'):
         model = RandomForestClassifier()
         model_cv = GridSearchCV(model, param_grid=params, cv=cv, verbose=v)
         model_cv.fit(X_train, y_train)
         best_params = model_cv.best_params_
-        print("Best Parameters: ", best_params)
         pickle.dump(model_cv, open(pkl_file, 'wb'))
+        return best_params
+
     elif(model == 'svm'):
         model = SVC()
         model_cv = GridSearchCV(model, param_grid=params, cv=cv, verbose=v)
         model_cv.fit(X_train, y_train)
         best_params = model_cv.best_params_
-        print("Best Parameters: ", best_params)
         pickle.dump(model_cv, open(pkl_file, 'wb'))
+        return best_params
+
     elif(model == 'xgb'):
         model = XGBClassifier()
         model_cv = GridSearchCV(model, param_grid=params, cv=cv, verbose=v)
         model_cv.fit(X_train, y_train)
         best_params = model_cv.best_params_
-        print("Best Parameters: ", best_params)
         pickle.dump(model_cv, open(pkl_file, 'wb'))
+        return best_params
+
     elif(model == 'ada'):
         model = AdaBoostClassifier()
         model_cv = GridSearchCV(model, param_grid=params, cv=cv, verbose=v)
         model_cv.fit(X_train, y_train)
         best_params = model_cv.best_params_
-        print("Best Parameters: ", best_params)
         pickle.dump(model_cv, open(pkl_file, 'wb'))
+        return best_params
+
     else:
         print('''model's name is not correct
         please choose one of the following model:
@@ -424,9 +437,23 @@ def main():
     X_train_blnc, y_train_blnc = balance_data('smote', X_train_scale, y_train)
     cv = k_fold_cross_validation(10)
 
-    params = {"criterion" : ["gini", "entropy", "log_loss"], "max_depth": [100]}
+    params= {
+        "criterion"     :   ["gini", "entropy", "log_loss"], 
+        "max_depth"     :   [100],
+        "random_state"  :   [1024]
+        }
 
-    fit_model('dt', X_train_blnc, y_train_blnc, cv, params, 3, 'D:\\CDC_ML_pkl\\dt.pkl')
+    best_params = fit_model('dt',           # model name
+                            X_train_blnc,   # X_train
+                            y_train_blnc,   # y_train
+                            cv,             # cv
+                            params,         # parameters 
+                            3,              # verbose
+                            'D:\\CDC_ML_pkl\\dt.pkl' # pkl file location
+                            )
+
+    print("\n\nBest Parameters =", best_params, "\n\n")
+
     load_model_perc = load_model('D:\\CDC_ML_pkl\\dt.pkl')
     score_model(X_test_scale, y_test, load_model_perc)
 
