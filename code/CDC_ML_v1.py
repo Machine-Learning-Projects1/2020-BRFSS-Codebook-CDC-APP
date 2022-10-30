@@ -28,6 +28,7 @@ from sklearn.ensemble import AdaBoostClassifier
 from sklearn.model_selection import RandomizedSearchCV
 from xgboost import XGBClassifier
 from sklearn.svm import SVC
+from sklearn.metrics import roc_curve, auc
 # import tensorflow as tf
 # from tensorflow import keras
 # from tensorflow.keras import Sequential
@@ -300,7 +301,7 @@ def k_fold_cross_validation(number_of_split):
     # creat a list of k
     return KFold(n_splits=number_of_split, random_state=None,shuffle=False)
 
-def fit_model(model, X_train, y_train, cv, params, v, pkl_file):
+def fit_model(model, X_train, y_train, X_test, y_test, cv, params, v, pkl_file):
     """fit model
     Args:
         model (string): model's name
@@ -315,41 +316,46 @@ def fit_model(model, X_train, y_train, cv, params, v, pkl_file):
         model = DecisionTreeClassifier()
         model_cv = GridSearchCV(model, param_grid=params, cv=cv, verbose=v)
         model_cv.fit(X_train , y_train)
-        best_params = model_cv.best_params_
+        print(model_cv.best_params_)
         pickle.dump(model_cv, open(pkl_file, 'wb'))
-        return best_params
+        roc_auc(model_cv, X_test, y_test)
+        return model_cv
 
     elif(model == 'perceptron'):
         model = Perceptron()
         model_cv = GridSearchCV(model , param_grid=params, cv=cv, verbose=v)
         model_cv.fit(X_train, y_train)
-        best_params = model_cv.best_params_
+        print(model_cv.best_params_)
         pickle.dump(model_cv, open(pkl_file, 'wb'))
-        return best_params
+        roc_auc(model_cv, X_test, y_test)
+        return model_cv
 
     elif (model == 'nb'):
         model = GaussianNB()
         model_cv = GridSearchCV(model, param_grid=params ,cv=cv, verbose=v) 
         model_cv.fit(X_train, y_train)
-        best_params = model_cv.best_params_
+        print(model_cv.best_params_)
         pickle.dump(model_cv, open(pkl_file, 'wb'))
-        return best_params
+        roc_auc(model_cv, X_test, y_test)
+        return model_cv
 
     elif (model == 'knn'):
         model = KNeighborsClassifier()
         model_cv = GridSearchCV(model, param_grid=params, cv=cv, verbose=v)
         model_cv.fit(X_train, y_train)
-        best_params = model_cv.best_params_
+        print(model_cv.best_params_)
         pickle.dump(model_cv, open(pkl_file, 'wb'))
-        return best_params
+        roc_auc(model_cv, X_test, y_test)
+        return model_cv
 
     elif(model == 'lr'):
         model = LogisticRegression()
         model_cv = GridSearchCV(model, param_grid=params, cv=cv, verbose=v)
         model.fit(X_train,y_train)
-        best_params = model_cv.best_params_
+        print(model_cv.best_params_)
         pickle.dump(model_cv, open(pkl_file, 'wb'))
-        return best_params
+        roc_auc(model_cv, X_test, y_test)
+        return model_cv
 
     # elif(model == 'nn'):
     #     model=Sequential([
@@ -374,33 +380,37 @@ def fit_model(model, X_train, y_train, cv, params, v, pkl_file):
         model = RandomForestClassifier()
         model_cv = GridSearchCV(model, param_grid=params, cv=cv, verbose=v)
         model_cv.fit(X_train, y_train)
-        best_params = model_cv.best_params_
+        print(model_cv.best_params_)
         pickle.dump(model_cv, open(pkl_file, 'wb'))
-        return best_params
+        roc_auc(model_cv, X_test, y_test)
+        return model_cv
 
     elif(model == 'svm'):
         model = SVC()
         model_cv = GridSearchCV(model, param_grid=params, cv=cv, verbose=v)
         model_cv.fit(X_train, y_train)
-        best_params = model_cv.best_params_
+        print(model_cv.best_params_)
         pickle.dump(model_cv, open(pkl_file, 'wb'))
-        return best_params
+        roc_auc(model_cv, X_test, y_test)
+        return model_cv
 
     elif(model == 'xgb'):
         model = XGBClassifier()
         model_cv = GridSearchCV(model, param_grid=params, cv=cv, verbose=v)
         model_cv.fit(X_train, y_train)
-        best_params = model_cv.best_params_
+        print(model_cv.best_params_)
         pickle.dump(model_cv, open(pkl_file, 'wb'))
-        return best_params
+        roc_auc(model_cv, X_test, y_test)
+        return model_cv
 
     elif(model == 'ada'):
         model = AdaBoostClassifier()
         model_cv = GridSearchCV(model, param_grid=params, cv=cv, verbose=v)
         model_cv.fit(X_train, y_train)
-        best_params = model_cv.best_params_
+        print(model_cv.best_params_)
         pickle.dump(model_cv, open(pkl_file, 'wb'))
-        return best_params
+        roc_auc(model_cv, X_test, y_test)
+        return model_cv
 
     else:
         print('''model's name is not correct
@@ -411,9 +421,30 @@ def load_model(pkl_file):
     loaded_model = pickle.load(open(pkl_file, 'rb'))
     return loaded_model
 
-def score_model(X_test, y_test, loaded_model):
+def classification_rep(X_test, y_test, loaded_model):
     y_pred = loaded_model.predict(X_test)
     print(classification_report(y_test, y_pred))
+    conf_matrix = confusion_matrix(y_test, y_pred)
+    plt.figure(figsize=(10,7))
+    sns.heatmap(conf_matrix, annot=True, linewidths=0.8, fmt='d', cmap='Blues')
+    plt.xlabel('Predicted',fontsize=16)
+    plt.ylabel('Truth',fontsize=16)
+    plt.show()
+
+def roc_auc(model_cv, X_test, y_test):
+    y_score_model = model_cv.predict_proba(X_test)
+    yes_probs = y_score_model[:,1]
+    plt.figure(figsize=(10,7), dpi=100)
+    plt.plot([0,1],[0,1],linestyle='--',label='No Skill')
+    fpr , tpr, threshold = roc_curve(y_test,yes_probs)  # false positive, true posistive, threshold
+    #AUC
+    auc_model = auc(fpr, tpr)
+    plt.plot(fpr, tpr, marker='_', label='(auc=%0.3f)' % auc_model, color='Orange')
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.legend()
+    plt.show()
+    
 
 def main():
     """Driver
@@ -435,25 +466,38 @@ def main():
     X_train_blnc, y_train_blnc          = balance_data                  ('smote', X_train_scale, y_train)
     cv                                  = k_fold_cross_validation       (10)
 
-    params= {
+    params_dt = {
         "criterion"     :   ["gini", "entropy", "log_loss"], 
         "max_depth"     :   [100],
         "random_state"  :   [1024]
         }
 
-    best_params = fit_model('dt',           # model name
-                            X_train_blnc,   # X_train
-                            y_train_blnc,   # y_train
-                            cv,             # cv
-                            params,         # parameters 
-                            3,              # verbose
-                            'D:\\CDC_ML_pkl\\dt.pkl' # pkl file location
-                            )
+    params_nb = {
+        'var_smoothing': np.logspace(1,10, num=10)
+        }
 
-    print("\n\nBest Parameters =", best_params, "\n\n")
+    params_knn = {
+        'algorithm':['ball_tree', 'kd_tree', 'brute'],
+        'n_neighbors':list(range(1,101)),
+        'weights':['uniform', 'distance'],
+        'leaf_size':list(range(1,101)),
+        'p':[1,2],
+        'metric':['minkowski', 'euclidean', 'manhattan'],
+        }
 
-    load_model_perc = load_model('D:\\CDC_ML_pkl\\dt.pkl')
-    score_model(X_test_scale, y_test, load_model_perc)
+    y_pred = fit_model('knn',            # model name
+                        X_train_blnc,   # X_train
+                        y_train_blnc,   # y_train
+                        X_test_scale,   # X_test
+                        y_test,         # y_test
+                        cv,             # cv
+                        params_knn,     # parameters 
+                        3,              # verbose
+                        'D:\\CDC_ML_pkl\\dt.pkl' # pkl file location
+                        )
+
+    loaded_model = load_model('D:\\CDC_ML_pkl\\dt.pkl')
+    classification_rep(X_test_scale, y_test, loaded_model)
 
 
 if __name__ == "__main__" :
