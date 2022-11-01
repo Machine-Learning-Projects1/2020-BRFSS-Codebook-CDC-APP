@@ -172,12 +172,21 @@ st.subheader('1. Dataset')
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
     st.write(df)
+    my_bar = st.progress(0)
+    st.success('Dataset successfully loaded.', icon="✅")
+    st.write('---')
+
+    st.subheader('2. Build Model')
+    st.info('Awaiting for select model and build model button.')
     # build_model(df)
 else:
     st.info('Awaiting for CSV file to be uploaded.')
     if st.button('Press to use CDC_2020 Dataset'):
         df = load_dataset('https://raw.githubusercontent.com/Machine-Learning-Projects1/CDC_ML/main/dataset/heart_2020_cleaned.csv')
         st.write(df)
+        st.success('Dataset successfully loaded.', icon="✅")
 
+        st.write('---')
         st.subheader('2. Build Model')
-        st.info('Awaiting for select model and build.')
+        st.info('Awaiting for select model and build model button.')
+
