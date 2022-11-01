@@ -228,7 +228,7 @@ def preprocessing_encode_columns(dataframe):
     dataframe = pd.get_dummies(dataframe, columns=['Race', 'Diabetic', 'GenHealth'], prefix = ['Race', 'Diabetic', 'GenHealth'])
     return dataframe
 
-def preprocessing_splitting(dataframe, target):
+def preprocessing_splitting(dataframe, target, split_size):
     """Preprocessing; splitting dataset: 20/100 and 80/100
 
     Args:
@@ -238,7 +238,7 @@ def preprocessing_splitting(dataframe, target):
         dataframe: dataframe
     """
     # split the data into train and test
-    train_data, test_data = train_test_split(dataframe, train_size=0.80)
+    train_data, test_data = train_test_split(dataframe, train_size=split_size)
     # split the train data into train and validation
     X_train = train_data.drop(target, axis=1)
     y_train = train_data[target]
@@ -312,7 +312,7 @@ def fit_model(model, X_train, y_train, X_test, y_test, cv, params, v, pkl_file):
         v (int): verbose: the higher, the more messages
         pkl_file (pkl): pickle file for save the model
     """
-    if(model == 'dt'):
+    if(model == 'decision_tree'):
         model = DecisionTreeClassifier()
         model_cv = GridSearchCV(model, param_grid=params, cv=cv, verbose=v)
         model_cv.fit(X_train , y_train)
@@ -330,7 +330,7 @@ def fit_model(model, X_train, y_train, X_test, y_test, cv, params, v, pkl_file):
         roc_auc(model_cv, X_test, y_test)
         return model_cv
 
-    elif (model == 'nb'):
+    elif (model == 'naive_bayes'):
         model = GaussianNB()
         model_cv = GridSearchCV(model, param_grid=params ,cv=cv, verbose=v) 
         model_cv.fit(X_train, y_train)
@@ -348,7 +348,7 @@ def fit_model(model, X_train, y_train, X_test, y_test, cv, params, v, pkl_file):
         roc_auc(model_cv, X_test, y_test)
         return model_cv
 
-    elif(model == 'lr'):
+    elif(model == 'logistic_regression'):
         model = LogisticRegression()
         model_cv = GridSearchCV(model, param_grid=params, cv=cv, verbose=v)
         model.fit(X_train,y_train)
@@ -376,7 +376,7 @@ def fit_model(model, X_train, y_train, X_test, y_test, cv, params, v, pkl_file):
     #     pickle.dump(model, open(pkl_file, 'wb'))
     #     return best_params
 
-    elif(model == 'rf'):
+    elif(model == 'random_forest'):
         model = RandomForestClassifier()
         model_cv = GridSearchCV(model, param_grid=params, cv=cv, verbose=v)
         model_cv.fit(X_train, y_train)
@@ -394,7 +394,7 @@ def fit_model(model, X_train, y_train, X_test, y_test, cv, params, v, pkl_file):
         roc_auc(model_cv, X_test, y_test)
         return model_cv
 
-    elif(model == 'xgb'):
+    elif(model == 'xg_boost'):
         model = XGBClassifier()
         model_cv = GridSearchCV(model, param_grid=params, cv=cv, verbose=v)
         model_cv.fit(X_train, y_train)
@@ -403,7 +403,7 @@ def fit_model(model, X_train, y_train, X_test, y_test, cv, params, v, pkl_file):
         roc_auc(model_cv, X_test, y_test)
         return model_cv
 
-    elif(model == 'ada'):
+    elif(model == 'ada_boost'):
         model = AdaBoostClassifier()
         model_cv = GridSearchCV(model, param_grid=params, cv=cv, verbose=v)
         model_cv.fit(X_train, y_train)
@@ -414,8 +414,16 @@ def fit_model(model, X_train, y_train, X_test, y_test, cv, params, v, pkl_file):
 
     else:
         print('''model's name is not correct
-        please choose one of the following model:
-        dt, perceptron, nb, knn, lr, nn, rf, svm, xgb, ada''')
+        please choose one of the following models:
+        decision_tree
+        perceptron
+        naive_bayes
+        knn
+        logistic_regression
+        random_forest
+        svm
+        xg_boost
+        ada_boost''')
 
 def load_model(pkl_file):
     loaded_model = pickle.load(open(pkl_file, 'rb'))
@@ -446,59 +454,59 @@ def roc_auc(model_cv, X_test, y_test):
     plt.show()
     
 
-def main():
-    """Driver
-    """
-    df_cdc = load_dataset('G:\\My Drive\\CDC_ML\\2-Working\\dataset\\heart_2020_cleaned.csv')
-    # unique_values(df_cdc)
+# def main():
+#     """Driver
+#     """
+#     df_cdc = load_dataset('G:\\My Drive\\CDC_ML\\2-Working\\dataset\\heart_2020_cleaned.csv')
+#     # unique_values(df_cdc)
 
-    # print(numerical_features        (df_cdc))
-    # print(categorical_features      (df_cdc)) 
-    # univariate_categorical_graph    (df_cdc, categorical_features(df_cdc))
-    # univariate_numerical_graph      (df_cdc, numerical_features(df_cdc))
-    # univariate_numerical_statistic  (df_cdc, numerical_features(df_cdc))
-    # bivariate_categorical_graph     (df_cdc, categorical_features(df_cdc))
-    # bivariate_numerical_graph       (df_cdc, numerical_features(df_cdc), 'DiffWalking')
+#     # print(numerical_features        (df_cdc))
+#     # print(categorical_features      (df_cdc)) 
+#     # univariate_categorical_graph    (df_cdc, categorical_features(df_cdc))
+#     # univariate_numerical_graph      (df_cdc, numerical_features(df_cdc))
+#     # univariate_numerical_statistic  (df_cdc, numerical_features(df_cdc))
+#     # bivariate_categorical_graph     (df_cdc, categorical_features(df_cdc))
+#     # bivariate_numerical_graph       (df_cdc, numerical_features(df_cdc), 'DiffWalking')
     
-    df_cdc_encode                       = preprocessing_encode_columns  (df_cdc)
-    X_train, y_train, X_test, y_test    = preprocessing_splitting       (df_cdc_encode, 'HeartDisease')
-    X_train_scale, X_test_scale         = preprocessing_scaling         (X_train, X_test)    
-    X_train_blnc, y_train_blnc          = balance_data                  ('smote', X_train_scale, y_train)
-    cv                                  = k_fold_cross_validation       (10)
+#     df_encode                           = preprocessing_encode_columns  (df_cdc)
+#     X_train, y_train, X_test, y_test    = preprocessing_splitting       (df_encode, 'HeartDisease', 0.8)
+#     X_train_scale, X_test_scale         = preprocessing_scaling         (X_train, X_test)    
+#     X_train_blnc, y_train_blnc          = balance_data                  ('smote', X_train_scale, y_train)
+#     cv                                  = k_fold_cross_validation       (10)
 
-    params_dt = {
-        "criterion"     :   ["gini", "entropy", "log_loss"], 
-        "max_depth"     :   [100],
-        "random_state"  :   [1024]
-        }
+#     params_dt = {
+#         "criterion"     :   ["gini", "entropy", "log_loss"], 
+#         "max_depth"     :   [100],
+#         "random_state"  :   [1024]
+#         }
 
-    params_nb = {
-        'var_smoothing': np.logspace(1,10, num=10)
-        }
+#     params_nb = {
+#         'var_smoothing': np.logspace(1,10, num=10)
+#         }
 
-    params_knn = {
-        'algorithm':['ball_tree', 'kd_tree', 'brute'],
-        'n_neighbors':list(range(1,101)),
-        'weights':['uniform', 'distance'],
-        'leaf_size':list(range(1,101)),
-        'p':[1,2],
-        'metric':['minkowski', 'euclidean', 'manhattan'],
-        }
+#     params_knn = {
+#         'algorithm':['ball_tree', 'kd_tree', 'brute'],
+#         'n_neighbors':list(range(1,101)),
+#         'weights':['uniform', 'distance'],
+#         'leaf_size':list(range(1,101)),
+#         'p':[1,2],
+#         'metric':['minkowski', 'euclidean', 'manhattan'],
+#         }
 
-    y_pred = fit_model('knn',            # model name
-                        X_train_blnc,   # X_train
-                        y_train_blnc,   # y_train
-                        X_test_scale,   # X_test
-                        y_test,         # y_test
-                        cv,             # cv
-                        params_knn,     # parameters 
-                        3,              # verbose
-                        'D:\\CDC_ML_pkl\\dt.pkl' # pkl file location
-                        )
+#     y_pred = fit_model('decision_tree', # model name
+#                         X_train_blnc,   # X_train
+#                         y_train_blnc,   # y_train
+#                         X_test_scale,   # X_test
+#                         y_test,         # y_test
+#                         cv,             # cv
+#                         params_dt,      # parameters 
+#                         3,              # verbose
+#                         'D:\\CDC_ML_pkl\\test.pkl' # pkl file location
+#                         )
 
-    loaded_model = load_model('D:\\CDC_ML_pkl\\dt.pkl')
-    classification_rep(X_test_scale, y_test, loaded_model)
+#     loaded_model = load_model('D:\\CDC_ML_pkl\\test.pkl')
+#     classification_rep(X_test_scale, y_test, loaded_model)
 
 
-if __name__ == "__main__" :
-    main()
+# if __name__ == "__main__" :
+#     main()
