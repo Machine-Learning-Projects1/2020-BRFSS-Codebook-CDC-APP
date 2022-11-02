@@ -23,7 +23,7 @@ with st.sidebar:
         with col1:
             st.image('https://raw.githubusercontent.com/Machine-Learning-Projects1/CDC_ML/test-ui/assets/logo.png', width=60)
         with col2:
-            st.markdown("## Machine Learning Projects [*GitHub*](https://www.cdc.gov/brfss/annual_data/2020/pdf/codebook20_llcp-v2-508.pdf)")
+            st.markdown("## Machine Learning Projects [*GitHub*](https://github.com/Machine-Learning-Projects1)")
         st.write("---")
 
 with st.container():
