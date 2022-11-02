@@ -2,3 +2,6 @@
 *.csv
 __pycache__/
 *.conf
+*.png
+*.jpg
+/assets/
