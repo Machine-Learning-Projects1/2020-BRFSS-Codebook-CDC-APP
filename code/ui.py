@@ -18,7 +18,13 @@ st.write("# The Machine Learning App")
 #---------------------------------#
 with st.sidebar:
     with st.container():
-        st.image('https://raw.githubusercontent.com/armixz/armixz/main/ztf_bh_merger_webready.original.jpg')
+        col1, col2 = st.columns([1,4])
+
+        with col1:
+            st.image('https://raw.githubusercontent.com/Machine-Learning-Projects1/CDC_ML/test-ui/assets/logo.png', width=60)
+        with col2:
+            st.markdown("## Machine Learning Projects [*GitHub*](https://www.cdc.gov/brfss/annual_data/2020/pdf/codebook20_llcp-v2-508.pdf)")
+        st.write("---")
 
 with st.container():
     with st.sidebar.header('1. Upload your CSV data'):
