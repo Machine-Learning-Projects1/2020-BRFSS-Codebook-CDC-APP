@@ -5,6 +5,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.datasets import load_diabetes, load_boston
+from PIL import Image
 
 #---------------------------------#
 # Page layout
@@ -15,7 +16,10 @@ st.set_page_config(page_title='Machine Learning Projects App', initial_sidebar_s
 st.write("# The Machine Learning App")
 
 #---------------------------------#
-# Sidebar - Collects user input features into dataframe
+with st.container():
+    image = Image.open('https://images.unsplash.com/photo-1667363852385-eeb0494527f2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2056&q=80')
+    st.sidebar.image('')
+
 with st.container():
     with st.sidebar.header('1. Upload your CSV data'):
         uploaded_file = st.sidebar.file_uploader("Upload your input CSV file", type=["csv"])
