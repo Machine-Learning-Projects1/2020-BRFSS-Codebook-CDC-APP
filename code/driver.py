@@ -344,8 +344,8 @@ def fit_model(model, X_train, y_train, X_test, y_test, cv, params, v, pkl_file):
         model_cv = GridSearchCV(model, param_grid=params, cv=cv, verbose=v)
         model_cv.fit(X_train, y_train)
         print(model_cv.best_params_)
-        pickle.dump(model_cv, open(pkl_file, 'wb'))
-        roc_auc(model_cv, X_test, y_test)
+        # pickle.dump(model_cv, open(pkl_file, 'wb'))
+        # roc_auc(model_cv, X_test, y_test)
         return model_cv
 
     elif(model == 'logistic_regression'):
