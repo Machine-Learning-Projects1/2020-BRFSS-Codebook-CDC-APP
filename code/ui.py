@@ -51,11 +51,11 @@ with st.container():
     params_mode = st.sidebar.radio(
     "Choose the hyperparameters mode, either manual or automatic. If automatic, the hyperparameters will be tuned using GridSearchCV. If manual, you will have to enter the hyperparameters manually.",
     ('Automatic', 'Manual'))
-st.sidebar.write('---')
+    st.sidebar.write('\n')
 
 # Sidebar - Specify parameter settings
 if model_selection == 'k-Nearest Neighbors' and params_mode == 'Automatic':
-    with st.sidebar.header('3.1 Set Parameters'):
+    with st.sidebar.subheader('3.1 Set Parameters'):
         n_neighbors = st.sidebar.slider('Number of neighbors (n_neighbors)', 1, 20, 5)
         weights = st.sidebar.multiselect('Weight function used in prediction', ['uniform', 'distance'])
         algorithm = st.sidebar.multiselect(
@@ -78,7 +78,7 @@ if model_selection == 'k-Nearest Neighbors' and params_mode == 'Automatic':
         n_jobs = st.sidebar.multiselect(
             'Number of parallel jobs to run (n_jobs). None means 1 unless in a joblib.parallel_backend context. -1 means using all processors.', [1, -1]
         )
-        st.sidebar.write('---')
+        st.sidebar.write('\n')
 
 
 # Sidebar - Specify parameter settings
@@ -219,11 +219,12 @@ if model_selection == 'Naive Bayes' and params_mode == 'Manual':
         )
         if priors == 'Manual':
             priors = st.sidebar.text_input('Prior probabilities of the classes (priors)', value='None')
-        st.sidebar.write('---')
+        st.sidebar.write('\n')
 
 
 # Building the model
 buildb = st.sidebar.button('Build Model')
+st.sidebar.write('---')
 
 #---------------------------------#
 # Main panel
