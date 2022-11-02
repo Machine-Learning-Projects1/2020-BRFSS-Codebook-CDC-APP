@@ -22,19 +22,54 @@ with st.container():
         st.sidebar.write('---')
 
 with st.container():
-    with st.sidebar.header('2. Select model'):
+    with st.sidebar.header('2. Data preprocessing'):
+        target = st.sidebar.text_input('Target', 'HeartDisease')
+        split_size = st.sidebar.slider('Data split ratio (% for Training Set)', 10, 90, 80, 5)
+        split_size = split_size/100
+        pp = st.sidebar.button('Preprocess data')
+        st.sidebar.write('---')
+
+with st.container():
+    with st.sidebar.header('3. Select model'):
         # Add a selectbox to the sidebar:
         model_selection = st.sidebar.selectbox(
             'Choose a model',
             ('k-Nearest Neighbors', 'Decision Tree', 'Perceptron', 'Logistic Regression', 'SVM', 'Neural Network', 'Random Forest', 'XGBoost', 'AdaBoost', 'Naive Bayes', 'GMM', 'Deep Learning', 'Large language model')
         )
         
+    st.sidebar.write('\n')
     params_mode = st.sidebar.radio(
-    "Choose the hyperparameters mode",
+    "Choose the hyperparameters mode, either manual or automatic. If automatic, the hyperparameters will be tuned using GridSearchCV. If manual, you will have to enter the hyperparameters manually.",
     ('Automatic', 'Manual'))
-
-
 st.sidebar.write('---')
+
+# Sidebar - Specify parameter settings
+if model_selection == 'k-Nearest Neighbors' and params_mode == 'Automatic':
+    with st.sidebar.header('3.1 Set Parameters'):
+        n_neighbors = st.sidebar.slider('Number of neighbors (n_neighbors)', 1, 20, 5)
+        weights = st.sidebar.multiselect('Weight function used in prediction', ['uniform', 'distance'])
+        algorithm = st.sidebar.multiselect(
+            'Algorithm used to compute the nearest neighbors (algorithm)',
+            ['auto', 'ball_tree', 'kd_tree', 'brute']
+        )
+        leaf_size = st.sidebar.slider('Leaf size passed to BallTree or KDTree (leaf_size)', 1, 50, 30)
+        p = st.sidebar.multiselect(
+            'Power parameter for the Minkowski metric (p)',
+            [1, 2]
+        )
+        metric = st.sidebar.multiselect(
+            'The distance metric to use for the tree (metric)',
+            ['minkowski', 'euclidean', 'manhattan']
+        )
+        metric_params = st.sidebar.multiselect(
+            'Additional keyword arguments for the metric function (metric_params)',
+            ['None', 'distance']
+        )
+        n_jobs = st.sidebar.multiselect(
+            'Number of parallel jobs to run (n_jobs). None means 1 unless in a joblib.parallel_backend context. -1 means using all processors.', [1, -1]
+        )
+        st.sidebar.write('---')
+
 
 # Sidebar - Specify parameter settings
 if model_selection == 'k-Nearest Neighbors' and params_mode == 'Manual':
@@ -47,6 +82,22 @@ if model_selection == 'k-Nearest Neighbors' and params_mode == 'Manual':
         algorithm = st.sidebar.radio(
             'Algorithm used to compute the nearest neighbors (algorithm)',
             ('auto', 'ball_tree', 'kd_tree', 'brute')
+        )
+        leaf_size = st.sidebar.slider('Leaf size passed to BallTree or KDTree (leaf_size)', 1, 50, 30)
+        p = st.sidebar.radio(
+            'Power parameter for the Minkowski metric (p)',
+            (1, 2)
+        )
+        metric = st.sidebar.radio(
+            'The distance metric to use for the tree (metric)',
+            ('minkowski', 'euclidean', 'manhattan')
+        )
+        metric_params = st.sidebar.radio(
+            'Additional keyword arguments for the metric function (metric_params)',
+            ('None', 'distance')
+        )
+        n_jobs = st.sidebar.radio(
+            'Number of parallel jobs to run (n_jobs). None means 1 unless in a joblib.parallel_backend context. -1 means using all processors.', (1, -1)
         )
         st.sidebar.write('---')
 
@@ -160,8 +211,9 @@ if model_selection == 'Naive Bayes' and params_mode == 'Manual':
             priors = st.sidebar.text_input('Prior probabilities of the classes (priors)', value='None')
         st.sidebar.write('---')
 
+
 # Building the model
-st.sidebar.button('Build Model')
+buildb = st.sidebar.button('Build Model')
 
 #---------------------------------#
 # Main panel
@@ -171,20 +223,46 @@ st.subheader('1. Dataset')
 
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
+    
     st.write(df)
-    my_bar = st.progress(0)
-    st.success('Dataset successfully loaded.', icon="✅")
+    st.write('Dataframe shape', df.shape)
+    st.success('Dataset successfully loaded.')
     st.write('---')
+    
+    st.subheader('2. Data Preprocessing')
+    st.info('Awaiting for preprocessing parameters...')
 
-    st.subheader('2. Build Model')
-    st.info('Awaiting for select model and build model button.')
-    # build_model(df)
+    if pp:
+        df_encode = preprocessing_encode_columns(df)
+        X_train, y_train, X_test, y_test = preprocessing_splitting(df_encode, target, split_size)
+        X_train_scale, X_test_scale = preprocessing_scaling(X_train, X_test)
+        X_train_blnc, y_train_blnc = balance_data('smote', X_train_scale, y_train)
+        cv = k_fold_cross_validation(10)
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.write('X_train', X_train.shape, X_train.head())
+            st.write('y_train', y_train.shape, y_train.head())
+
+        with col2:
+            st.write('X_test', X_test.shape, X_test.head())
+            st.write('y_test', y_test.shape, y_test.head())
+
+        st.success('Data preprocessing successfully completed.')
+        st.write('---')
+
+        st.subheader('3. Build Model')
+        st.info('Awaiting for select model and build model button.')
+        # if buildb:
+            
+
 else:
     st.info('Awaiting for CSV file to be uploaded.')
     if st.button('Press to use CDC_2020 Dataset'):
         df = load_dataset('https://raw.githubusercontent.com/Machine-Learning-Projects1/CDC_ML/main/dataset/heart_2020_cleaned.csv')
         st.write(df)
-        st.success('Dataset successfully loaded.', icon="✅")
+        st.success('Dataset successfully loaded.')
 
         st.write('---')
         st.subheader('2. Build Model')
